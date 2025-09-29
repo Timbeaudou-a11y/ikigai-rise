@@ -139,9 +139,71 @@
       background: rgba(255,255,255,0.08);
       display: inline-block;
     }
+
+    /* Password gate overlay (keeps styles scoped at end so it overrides) */
+    #pwGate {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(2,2,3,0.88);
+      z-index: 10050;
+      -webkit-backdrop-filter: blur(6px);
+      backdrop-filter: blur(6px);
+      padding: 20px;
+    }
+    #pwGate .card {
+      width: min(760px, 96%);
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px;
+      padding: 28px 26px;
+      text-align: center;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+      color: var(--text);
+    }
+    #pwGate h2 {margin:0 0 8px 0;font-size:22px;font-weight:700}
+    #pwGate p.desc {color:var(--muted);margin-bottom:18px}
+    #pwGate .input-row {display:flex;gap:12px;justify-content:center;align-items:center}
+    #pwGate input[type="password"]{
+      width: 55%;
+      max-width: 380px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.02);
+      color: var(--text);
+      font-size: 16px;
+      outline: none;
+    }
+    #pwGate button {
+      padding: 12px 18px;
+      border-radius: 10px;
+      border: none;
+      background: var(--accent);
+      color: #0a0a0a;
+      font-weight:700;
+      cursor:pointer;
+      font-size:15px;
+    }
+    #pwGate .small {margin-top:12px;color:var(--muted);font-size:13px}
   </style>
 </head>
 <body>
+  <!-- Password gate (inserted at top) -->
+  <div id="pwGate" aria-hidden="false">
+    <div class="card" role="dialog" aria-label="Accès privé">
+      <h2>Accès privé</h2>
+      <p class="desc">Ce site est en version de test. Entre le code d'accès pour continuer.</p>
+      <div class="input-row">
+        <input id="pwInput" type="password" placeholder="Code d'accès">
+        <button id="pwBtn">Entrer</button>
+      </div>
+      <div class="small">Si tu n'as pas le code, contacte l'administrateur.</div>
+    </div>
+  </div>
+
   <!-- Preloader -->
   <div id="preloader">
     <div class="loader">IKIGAI RISE</div>
@@ -265,6 +327,48 @@
       <button id="closeIkigai" class="btn primary">Fermer</button>
     </div>
   </div>
+
+  <script>
+    // Password gate logic
+    (function(){
+      const PASSWORD = "1234"; // <-- change ici le code d'accès que tu veux
+      const STORE_KEY = "ikigai_auth_v1";
+      const gate = document.getElementById('pwGate');
+      const input = document.getElementById('pwInput');
+      const btn = document.getElementById('pwBtn');
+
+      // If already authorized in this browser, hide gate immediately
+      try {
+        if(localStorage.getItem(STORE_KEY) === "1") {
+          gate.style.display = "none";
+          return;
+        }
+      } catch(e){}
+
+      function authSuccess(){
+        try { localStorage.setItem(STORE_KEY, "1"); } catch(e){}
+        gate.style.display = "none";
+      }
+
+      function authFail(){
+        input.value = "";
+        input.placeholder = "Code incorrect";
+        input.focus();
+      }
+
+      btn.addEventListener('click', function(){
+        const val = input.value || "";
+        if(val === PASSWORD) authSuccess(); else authFail();
+      });
+
+      input.addEventListener('keydown', function(e){
+        if(e.key === "Enter") btn.click();
+      });
+
+      // optionally autofocus input
+      input.focus();
+    })();
+  </script>
 
   <script>
     // Background animation
