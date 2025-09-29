@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ikigai Rise – Résultat</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Poppins:wght@600;800&display=swap');
+    :root { --bg:#0a0a0c; --muted:#9aa4af; --accent:#ffffff; --text:#f5f5f5; }
+
+    body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;line-height:1.6;margin:0}
+    h1,h2,h3{font-family:'Poppins',sans-serif}
+    canvas#bgCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0}
+
+    .wrap{position:relative;z-index:2;max-width:900px;margin:0 auto;padding:40px 24px}
+    h1{text-align:center;font-size:40px;margin-bottom:30px}
+    .muted{color:var(--muted)}
+
+    /* Liquid Glass Card */
+    .card{
+      position:relative;
+      background:linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
+      border:1px solid rgba(255,255,255,0.2);
+      border-radius:20px;
+      padding:28px;
+      margin-bottom:28px;
+      backdrop-filter:blur(20px) saturate(180%);
+      -webkit-backdrop-filter:blur(20px) saturate(180%);
+      box-shadow:0 8px 32px rgba(255,255,255,0.08);
+      overflow:hidden;
+      transition:.3s;
+    }
+    .card:hover{transform:translateY(-4px)}
+
+    .card::before{
+      content:"";
+      position:absolute;
+      top:-50%;
+      left:-50%;
+      width:200%;
+      height:200%;
+      background:radial-gradient(circle at 30% 30%, rgba(255,255,255,0.25), transparent 70%);
+      transform:rotate(25deg);
+      animation:liquid 12s linear infinite;
+      pointer-events:none;
+    }
+    @keyframes liquid{
+      0%{transform:translateX(0) rotate(25deg);}
+      50%{transform:translateX(15%) rotate(25deg);}
+      100%{transform:translateX(0) rotate(25deg);}
+    }
+
+    .locked{opacity:0.6;position:relative}
+    .locked::after{content:"🔒 Premium";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.6);padding:6px 12px;border-radius:8px;font-size:14px;color:var(--accent)}
+
+    ul{margin:0;padding-left:20px}
+
+    .cta{text-align:center;margin-top:40px;display:flex;flex-direction:column;gap:16px;align-items:center}
+    .btn{display:inline-block;padding:16px 28px;border-radius:14px;font-weight:600;text-decoration:none;cursor:pointer;transition:.2s}
+    .btn.premium{background:transparent;border:2px solid var(--accent);color:var(--accent)}
+    .btn.premium:hover{background:var(--accent);color:#0a0a0c}
+    .btn.reroll{background:var(--accent);color:#0a0a0c;font-size:16px;box-shadow:0 4px 16px rgba(255,255,255,0.3)}
+    .btn.reroll:hover{filter:brightness(1.15);transform:translateY(-2px)}
+    .btn.disabled{background:rgba(255,255,255,0.1);color:var(--muted);cursor:not-allowed;box-shadow:none;border:1px dashed var(--muted);}
+    .nav-buttons{display:flex;gap:10px;margin-top:10px}
+
+    /* Preloader */
+    #preloader {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: #0a0a0c;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.8s ease;
+    }
+    .loader {
+      font-family: 'Poppins', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: white;
+      letter-spacing: 2px;
+      animation: fadeText 2s infinite;
+    }
+    @keyframes fadeText {
+      0%,100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Preloader -->
+  <div id="preloader">
+    <div class="loader">IKIGAI RISE</div>
+  </div>
+
+  <canvas id="bgCanvas"></canvas>
+  <div class="wrap">
+    <h1 id="business-title">Agence TikTok Ads pour créateurs de montres</h1>
+
+    <div class="card" id="profile"></div>
+    <div class="card" id="description"></div>
+    <div class="card" id="plan-week"></div>
+    <div class="card locked" id="long-term"></div>
+    <div class="card" id="tools"></div>
+    <div class="card" id="revenues"></div>
+
+    <div class="cta">
+      <button class="btn reroll" id="rerollBtn">🔄 Nouvelle idée (2 essais restants)</button>
+      <div class="nav-buttons">
+        <button class="btn reroll" id="prevBtn">⬅️ Idée précédente</button>
+        <button class="btn reroll" id="nextBtn">➡️ Idée suivante</button>
+      </div>
+      <a href="#" class="btn premium">Débloquer Premium – 49€</a>
+    </div>
+  </div>
+
+  <script>
+    // Background animation
+    const canvas=document.getElementById('bgCanvas');const ctx=canvas.getContext('2d');let width,height,t=0,scrollScale=1;
+    function resize(){width=canvas.width=window.innerWidth;height=canvas.height=window.innerHeight}
+    window.addEventListener('resize',resize);resize();
+    function draw(){ctx.clearRect(0,0,width,height);const cx=width/2,cy=height/2;
+      for(let i=0;i<6;i++){const angle=(Math.PI*2/6)*i+t*0.01;
+        const orbitRadius=(220*scrollScale)+Math.sin(t*0.01+i)*20;
+        const x=cx+Math.cos(angle)*orbitRadius;const y=cy+Math.sin(angle)*orbitRadius;
+        const r=(100*scrollScale)+Math.sin(t*0.02+i)*20;
+        const g=ctx.createRadialGradient(x,y,r*0.2,x,y,r);
+        g.addColorStop(0,'rgba(255,255,255,0.15)');g.addColorStop(1,'rgba(255,255,255,0)');
+        ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();}
+      t++;requestAnimationFrame(draw)}
+    draw();
+    window.addEventListener('scroll',()=>{scrollScale=1+window.scrollY*0.0012});
+
+    // Ideas data
+    const ideas = [
+      {
+        title: "Agence TikTok Ads pour créateurs de montres",
+        profile: "Âge : +18 ans<br>Temps dispo : 10h/sem<br>Passions : luxe, sport auto<br>Budget : 100–500€",
+        description: "Aide les créateurs et petites marques de montres à exploser sur TikTok grâce à des publicités optimisées.",
+        weekPlan: ["Jour 1 : Créer une page TikTok Business et un portfolio simple.",
+                   "Jour 2–3 : Contacter 5 créateurs de montres.",
+                   "Jour 4–5 : Lancer une première campagne test avec 20€.",
+                   "Jour 6–7 : Optimiser les résultats et documenter le process."],
+        longTerm: "Détails 3–6 mois : scaler l’agence, trouver des clients récurrents, atteindre 5–10K€/mois.",
+        tools: ["Canva → visuels","CapCut → montage TikTok","Stripe → encaisser tes clients","Notion → suivi campagnes"],
+        revenues: "Avec 2–3 clients réguliers, viser 2K–3K€/mois en 3 mois est réaliste."
+      },
+      {
+        title: "Service d’édition vidéo pour YouTubers",
+        profile: "Âge : +18 ans<br>Temps dispo : 5h/sem<br>Passions : montage, gaming<br>Budget : 0–100€",
+        description: "Tu aides les petits créateurs YouTube à améliorer leurs vidéos.",
+        weekPlan: ["Jour 1 : Créer un portfolio Behance.",
+                   "Jour 2–3 : Prospecter 10 YouTubers.",
+                   "Jour 4–5 : Monter 1 vidéo test gratuite.",
+                   "Jour 6–7 : Convertir en client payant."],
+        longTerm: "Développer des contrats mensuels avec 5–10 créateurs.",
+        tools: ["DaVinci Resolve","Canva","Trello"],
+        revenues: "1–2 clients → 500–1000€/mois dès le début."
+      },
+      {
+        title: "Mini-agence Shopify pour e-com débutants",
+        profile: "Âge : +18 ans<br>Temps dispo : 15h/sem<br>Passions : e-com, design<br>Budget : 500€+",
+        description: "Tu crées des boutiques Shopify clés en main pour débutants.",
+        weekPlan: ["Jour 1 : Créer un template Shopify.",
+                   "Jour 2–3 : Prospecter via Facebook Groups.",
+                   "Jour 4–5 : Lancer première boutique.",
+                   "Jour 6–7 : Optimiser conversion."],
+        longTerm: "Créer une équipe freelance pour gérer plusieurs clients.",
+        tools: ["Shopify","Canva","Google Analytics"],
+        revenues: "1 client = 500–1000€ ; 3 clients/mois = 2–3K€."
+      }
+    ];
+
+    let currentIndex = 0;
+    let attemptsLeft = 2; // Seulement 2 rerolls max
+
+    function renderIdea(index) {
+      const idea = ideas[index];
+      document.getElementById("business-title").innerHTML = idea.title;
+      document.getElementById("profile").innerHTML = `<h2>👤 Profil</h2><p>${idea.profile}</p>`;
+      document.getElementById("description").innerHTML = `<h2>📖 Description du business</h2><p>${idea.description}</p>`;
+      document.getElementById("plan-week").innerHTML = `<h2>📅 Plan sur 1 semaine</h2><ul>${idea.weekPlan.map(i=>`<li>${i}</li>`).join("")}</ul>`;
+      document.getElementById("long-term").innerHTML = `<h2>⏳ Plan long terme</h2><p>${idea.longTerm}</p>`;
+      document.getElementById("tools").innerHTML = `<h2>🛠 Outils recommandés</h2><ul>${idea.tools.map(t=>`<li>${t}</li>`).join("")}</ul>`;
+      document.getElementById("revenues").innerHTML = `<h2>💰 Estimation revenus</h2><p>${idea.revenues}</p>`;
+    }
+
+    function updateButton() {
+      const btn = document.getElementById("rerollBtn");
+      if (attemptsLeft > 0) {
+        btn.textContent = `🔄 Nouvelle idée (${attemptsLeft} essai${attemptsLeft>1?"s":""} restants)`;
+      } else {
+        btn.textContent = "🔒 Plus d’essais – Passe Premium";
+        btn.classList.add("disabled");
+        btn.disabled = true;
+      }
+    }
+
+    document.getElementById("rerollBtn").addEventListener("click", () => {
+      if (attemptsLeft > 0) {
+        attemptsLeft--;
+        currentIndex = Math.floor(Math.random() * ideas.length);
+        renderIdea(currentIndex);
+        updateButton();
+      }
+    });
+
+    document.getElementById("prevBtn").addEventListener("click", () => {
+      currentIndex = (currentIndex - 1 + ideas.length) % ideas.length;
+      renderIdea(currentIndex);
+    });
+
+    document.getElementById("nextBtn").addEventListener("click", () => {
+      currentIndex = (currentIndex + 1) % ideas.length;
+      renderIdea(currentIndex);
+    });
+
+    renderIdea(currentIndex);
+    updateButton();
+
+    // Preloader with forced delay
+    window.addEventListener("load", () => {
+      const preloader = document.getElementById("preloader");
+      setTimeout(() => {
+        preloader.style.opacity = "0";
+        setTimeout(() => preloader.style.display = "none", 800);
+      }, 2000);
+    });
+  </script>
+</body>
+</html>
