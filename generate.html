@@ -5,467 +5,302 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ikigai Rise</title>
   <style>
-    :root {
-      --bg:#050507;
-      --muted:#9aa4af;
-      --accent:#ffffff;
-      --text:#f5f5f5;
-    }
-
-    *{box-sizing:border-box;margin:0;padding:0}
-
-    body{
-      margin:0;
-      background:var(--bg);
-      color:var(--text);
-      font-family:'Inter',sans-serif;
-      overflow-x:hidden;
-    }
-
+    :root { --bg:#0a0a0c; --muted:#9aa4af; --accent:#ffffff; --text:#f5f5f5; --line:rgba(255,255,255,0.08); }
+    body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;line-height:1.6;overflow-x:hidden;margin:0}
     h1,h2,h3{font-family:'Poppins',sans-serif}
+    canvas#bgCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0}
+    .wordmark{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Poppins',sans-serif;font-weight:800;letter-spacing:.06em;font-size:12vw;color:rgba(255,255,255,0.03);z-index:1;pointer-events:none;white-space:nowrap}
+    .wrap{position:relative;z-index:2;max-width:1200px;margin:0 auto;padding:24px}
+    .hero{text-align:center;padding:120px 20px 100px}
+    .hero h1{font-size:56px;margin-bottom:20px;letter-spacing:2px;font-weight:800}
+    .hero p{font-size:20px;color:var(--muted);max-width:700px;margin:0 auto}
+    .section{padding:100px 20px;text-align:center}
+    .section h2{font-size:32px;margin-bottom:16px}
+    .grid{display:grid;gap:28px}
+    .grid.cols3{grid-template-columns:repeat(3,1fr)}
 
-    /* Soleil */
-    canvas#bgCanvas{
-      position:fixed;
-      top:0;
-      left:0;
-      width:100%;
-      height:100%;
-      z-index:0;
-      transform-origin:center top;
+    /* Cards */
+    .card, .plan{
+      background:linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
+      border:1px solid rgba(255,255,255,0.2);
+      border-radius:20px;
+      padding:30px;
+      backdrop-filter:blur(20px) saturate(180%);
+      -webkit-backdrop-filter:blur(20px) saturate(180%);
+      box-shadow:0 8px 32px rgba(255,255,255,0.08);
+      transition:transform .3s, box-shadow .3s;
+      text-align:center;
+    }
+    .card:hover, .plan:hover{
+      transform:scale(1.03);
+      box-shadow:0 12px 40px rgba(255,255,255,0.15);
     }
 
-    /* Océan (canvas vagues) */
-    #oceanCanvas {
-      position: fixed;
-      top: 50%;
-      left: 0;
-      width: 100%;
-      height: 50%;
-      z-index: 1;
-      pointer-events: none;
-    }
+    .muted{color:var(--muted)}
+    .cta{text-align:center;margin:100px 0}
+    .btn{display:inline-block;padding:14px 24px;border-radius:14px;font-weight:600;text-decoration:none;cursor:pointer;transition:.2s}
+    .btn.primary{background:var(--accent);color:#0a0a0c;font-size:18px;box-shadow:0 4px 16px rgba(255,255,255,0.3)}
+    .btn.primary:hover{filter:brightness(1.15);transform:translateY(-2px)}
+    .btn.disabled{background:rgba(255,255,255,0.08);color:var(--muted);cursor:default;box-shadow:none}
+    .btn.more{margin-top:12px;display:inline-block;font-size:15px;color:var(--accent);opacity:0.8}
+    .btn.more:hover{opacity:1;text-decoration:underline}
+    footer{text-align:center;padding:30px;font-size:13px;color:var(--muted);z-index:2;position:relative}
 
-    /* Titre IKIGAI RISE façon "PRO" */
-    .bigTitle {
+    /* Pricing section */
+    .pricing{padding:100px 20px;text-align:center}
+    .pricing h2{font-size:36px;margin-bottom:40px}
+    .pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+    .plan{padding:40px}
+    .plan h3{font-size:24px;margin-bottom:10px}
+    .price{font-size:32px;font-weight:700;margin:10px 0 20px}
+    .features{list-style:none;padding:0;margin:0 0 30px}
+    .features li{margin:10px 0;color:var(--muted)}
+    @media(max-width:1000px){.pricing-grid{grid-template-columns:1fr 1fr}}
+    @media(max-width:650px){.pricing-grid{grid-template-columns:1fr}}
+
+    /* Preloader */
+    #preloader {
       position: fixed;
-      top: 30%;
-      left: 50%;
-      transform: translate(-50%, -50%) scale(1);
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: #0a0a0c;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.8s ease;
+      text-align: center;
+      padding: 20px;
+    }
+    .loader {
       font-family: 'Poppins', sans-serif;
-      font-weight: 900;
-      font-size: clamp(42px, 7vw, 120px);
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      white-space: nowrap;
-      z-index: 2;
-      pointer-events: none;
+      font-size: 28px;
+      font-weight: 700;
+      color: white;
+      letter-spacing: 2px;
+      animation: fadeText 2s infinite;
+      margin-bottom: 20px;
+    }
+    .loader-desc {
+      font-size: 16px;
+      font-weight: 400;
+      color: var(--muted);
+      max-width: 700px;
+      line-height: 1.6;
+    }
+    @keyframes fadeText {
+      0%,100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
 
-      background: linear-gradient(135deg,
-        #ffe3b8 0%,
-        #ffbf6f 40%,
-        #ff982c 100%
-      );
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-
-      -webkit-text-stroke: 1.4px rgba(255,180,80,0.85);
-
-      text-shadow:
-        0 0 25px rgba(255,150,50,0.55),
-        0 0 6px rgba(255,170,90,0.85),
-        0 0 2px rgba(0,0,0,0.8);
-
+    /* Modal Ikigai */
+    .modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0; visibility: hidden;
+      transition: opacity .4s ease, visibility .4s ease;
+      z-index: 1000;
+    }
+    .modal.show {opacity: 1; visibility: visible;}
+    .modal-content {
+      width: 80%;
+      max-width: 750px;
+      min-height: 500px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 20px;
+      padding: 50px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+      color: var(--text);
+      transform: scale(0.85);
       opacity: 0;
-      transition: opacity 2s ease;
+      transition: transform .4s ease, opacity .4s ease;
+      text-align: center;
     }
-    .bigTitle.show { opacity: 1; }
-
-    /* Contenu sous le hero */
-    main{
-      position:relative;
-      z-index:3;
-      color:var(--text);
-    }
-
-    .hero-spacer{
-      height:100vh;
-    }
-
-    .section-row{
-      min-height:70vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:80px 24px;
-    }
-    .section-inner{
-      max-width:1100px;
-      width:100%;
-      display:flex;
-      gap:40px;
-      align-items:center;
-    }
-    .section-row.reverse .section-inner{
-      flex-direction:row-reverse;
-    }
-
-    .section-text{
-      flex:1.3;
-    }
-    .section-text h2{
-      font-size:32px;
-      margin-bottom:16px;
-      letter-spacing:0.08em;
-      text-transform:uppercase;
-    }
-    .section-text p{
-      font-size:16px;
-      color:var(--muted);
-      line-height:1.7;
-      max-width:480px;
-    }
-
-    .section-tag{
-      font-size:12px;
-      letter-spacing:0.2em;
-      text-transform:uppercase;
-      color:rgba(255,255,255,0.55);
-      margin-bottom:10px;
-    }
-
-    .section-card{
-      flex:1;
-      border-radius:22px;
-      padding:26px 24px;
-      background:linear-gradient(135deg, rgba(255,255,255,0.11), rgba(255,255,255,0.03));
-      border:1px solid rgba(255,255,255,0.16);
-      box-shadow:0 16px 45px rgba(0,0,0,0.6);
-      backdrop-filter:blur(18px);
-    }
-    .section-card h3{
-      font-size:20px;
-      margin-bottom:12px;
-    }
-    .section-card p{
-      font-size:14px;
-      color:var(--muted);
-      margin-bottom:18px;
-    }
-
-    .price-pill{
-      display:inline-flex;
-      align-items:center;
-      gap:10px;
-      padding:10px 16px;
-      border-radius:999px;
-      background:rgba(255,255,255,0.06);
-      font-size:14px;
-    }
-    .price-pill span:first-child{
-      font-weight:600;
-      letter-spacing:0.08em;
-      text-transform:uppercase;
-    }
-    .price-main{
-      font-size:20px;
-      font-weight:700;
-    }
-
-    @media(max-width:900px){
-      .section-inner{
-        flex-direction:column;
-      }
-      .section-row.reverse .section-inner{
-        flex-direction:column;
-      }
-      .section-row{
-        padding:60px 18px;
-      }
-      .hero-spacer{
-        height:90vh;
-      }
-      .bigTitle{
-        top:28%;
-      }
+    .modal.show .modal-content {transform: scale(1);opacity: 1;}
+    .modal-content h2 {font-size: 28px;margin-bottom:10px;}
+    .modal-content .tagline {font-size:16px;color:var(--muted);margin-bottom:30px;}
+    .modal-features {text-align:left;max-width:600px;margin:0 auto 30px auto;}
+    .modal-features p {margin:15px 0;font-size:15px;}
+    .modal-features b {color:var(--accent);}
+    .price-box {
+      margin: 30px 0;
+      font-size: 20px;
+      font-weight: 600;
+      padding: 12px 20px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.08);
+      display: inline-block;
     }
   </style>
 </head>
-
 <body>
+  <!-- Preloader -->
+  <div id="preloader">
+    <div class="loader">IKIGAI RISE</div>
+    <p class="loader-desc">
+      L’Ikigai est l’art japonais de trouver l’équilibre entre ce que tu aimes, 
+      ce pour quoi tu es doué, ce dont le monde a besoin et ce qui peut te rémunérer.
+    </p>
+  </div>
 
-  <!-- Titre -->
-  <div class="bigTitle" id="bigTitle">IKIGAI RISE</div>
-
-  <!-- Soleil -->
   <canvas id="bgCanvas"></canvas>
+  <div class="wordmark">IKIGAI RISE</div>
+  <div class="wrap">
+    <section class="hero">
+      <h1>IKIGAI RISE</h1>
+      <p>Ton ascension commence ici. Découvre ton Ikigai, trouve ton idée et transforme-la en business rentable.</p>
+    </section>
 
-  <!-- Océan -->
-  <canvas id="oceanCanvas"></canvas>
+    <section class="section">
+      <h2>L’art de l’Ikigai</h2>
+      <p class="muted">
+        L’Ikigai est l’art japonais de trouver l’équilibre entre ce que tu aimes, ce pour quoi tu es doué, ce dont le monde a besoin et ce qui peut te rémunérer.<br> Avec <b>Ikigai Rise</b>, cet équilibre devient un plan d’action concret.
+      </p>
+    </section>
 
-  <!-- Contenu -->
-  <main>
-    <div class="hero-spacer"></div>
+    <section class="section">
+      <h2>Pourquoi Ikigai Rise ?</h2>
+      <div class="grid cols3 why" style="margin-top:40px;">
+        <div class="card"><h3>Clarté</h3><p class="muted">Une idée sur-mesure en moins de 5 minutes.</p></div>
+        <div class="card"><h3>Praticité</h3><p class="muted">Un plan simple, avec des étapes claires.</p></div>
+        <div class="card"><h3>Accessibilité</h3><p class="muted">Ton plan Ikigai Rise à partir de seulement 15€.</p></div>
+      </div>
+    </section>
 
-    <section class="section-row">
-      <div class="section-inner">
-        <div class="section-text">
-          <div class="section-tag">phase 1</div>
-          <h2>Découvre ton Ikigai en quelques minutes</h2>
-          <p>
-            Tu réponds à quelques questions simples sur ta situation, tes envies et ton rythme de vie.
-            L’algorithme Ikigai Rise filtre des centaines d’idées pour te proposer celles qui collent vraiment à toi.
-          </p>
+    <!-- Pricing section -->
+    <section class="pricing">
+      <h2>Nos offres</h2>
+
+      <!-- Achat unique -->
+      <h3 style="margin-bottom:30px;">Achat unique</h3>
+      <div class="pricing-grid" style="justify-content:center;grid-template-columns:repeat(2,1fr);max-width:900px;margin:0 auto">
+        <div class="plan">
+          <h3>Standard</h3>
+          <div class="price">15–20€</div>
+          <ul class="features">
+            <li>Un plan rapide</li>
+            <li>Résumé sur 7 jours</li>
+            <li>Accessible à tous</li>
+          </ul>
+          <a href="#" class="btn primary">Choisir</a>
         </div>
-        <div class="section-card">
-          <h3>Un premier plan concret</h3>
-          <p>
-            Résumé de ton profil, idée validée, forces principales, points de vigilance
-            et premières actions pour les 7 prochains jours.
-          </p>
-          <div class="price-pill">
-            <span>À partir de</span>
-            <span class="price-main">15&nbsp;€</span>
-          </div>
+        <div class="plan">
+          <h3>Enso</h3>
+          <div class="price">199€+</div>
+          <ul class="features">
+            <li>Plan unique sur-mesure</li>
+            <li>Business plan complet</li>
+            <li>Accompagnement premium</li>
+          </ul>
+          <a href="#" class="btn primary">Choisir</a>
+        </div>
+      </div>
+
+      <!-- Abonnements -->
+      <h3 style="margin:80px 0 30px;">Abonnements mensuels</h3>
+      <div class="pricing-grid">
+        <div class="plan">
+          <h3>Hajime</h3>
+          <div class="price">9–19€/mois</div>
+          <ul class="features">
+            <li>1 plan / mois</li>
+            <li>Templates basiques</li>
+            <li>Idéal pour débutants</li>
+          </ul>
+          <a href="#" class="btn primary">S’abonner</a>
+        </div>
+        <div class="plan">
+          <h3>Kanso</h3>
+          <div class="price">29–49€/mois</div>
+          <ul class="features">
+            <li>3 plans / mois</li>
+            <li>Ressources exclusives</li>
+            <li>Accès à la communauté</li>
+          </ul>
+          <a href="#" class="btn primary">S’abonner</a>
+        </div>
+        <div class="plan">
+          <h3>Ikigai</h3>
+          <div class="price">79–149€/mois</div>
+          <ul class="features">
+            <li>Plans illimités</li>
+            <li>Formations exclusives</li>
+            <li>Coaching groupé</li>
+          </ul>
+          <span class="btn disabled">Bientôt disponible</span><br>
+          <a href="#" class="btn more" id="openIkigai">En savoir plus</a>
         </div>
       </div>
     </section>
 
-    <section class="section-row reverse">
-      <div class="section-inner">
-        <div class="section-text">
-          <div class="section-tag">phase 2</div>
-          <h2>Transforme l’idée en plan de business</h2>
-          <p>
-            On détaille ton offre, ton positionnement, ta cible et ton calendrier.
-            Tu sais quoi lancer, dans quel ordre, et avec quel budget minimal.
-          </p>
-        </div>
-        <div class="section-card">
-          <h3>Roadmap Ikigai Rise</h3>
-          <p>
-            Checklist d’actions, planning sur 30 à 90 jours et leviers prioritaires
-            pour passer de “bonne idée” à projet qui peut encaisser ses premiers revenus.
-          </p>
-          <div class="price-pill">
-            <span>Pack roadmap</span>
-            <span class="price-main">49&nbsp;€</span>
-          </div>
-        </div>
-      </div>
+    <section class="cta">
+      <h2>Prêt à découvrir ton Ikigai Rise ?</h2>
+      <a href="generate.html" class="btn primary">Commencer maintenant</a>
     </section>
+  </div>
+  <footer>© 2025 Ikigai Rise – Tous droits réservés.</footer>
 
-    <section class="section-row">
-      <div class="section-inner">
-        <div class="section-text">
-          <div class="section-tag">phase 3</div>
-          <h2>Choisis l’accompagnement qui te correspond</h2>
-          <p>
-            Tu peux rester sur un plan unique, ou passer à un abonnement pour générer
-            plusieurs scénarios, tester des idées et ajuster ton parcours au fur et à mesure.
-          </p>
-        </div>
-        <div class="section-card">
-          <h3>Abonnements Ikigai Rise</h3>
-          <p>
-            Accès récurrent au générateur, mises à jour, templates premium et nouveautés.
-          </p>
-          <div class="price-pill">
-            <span>Abonnements</span>
-            <span class="price-main">9&nbsp;€ / mois</span>
-          </div>
-        </div>
+  <!-- Modal Ikigai -->
+  <div id="ikigaiModal" class="modal">
+    <div class="modal-content">
+      <h2>Abonnement Ikigai Elite</h2>
+      <p class="tagline">L’expérience la plus complète d’Ikigai Rise.</p>
+      <div class="modal-features">
+        <p>✔️ <b>Plans illimités & personnalisés</b> : pas de limite de rerolls, avec IA qui affine selon tes retours.</p>
+        <p>📖 <b>Versions longues</b> : business plan complet + roadmap sur plusieurs mois.</p>
+        <p>📊 <b>Ressources exclusives</b> : templates premium (Excel, Notion, pitch deck, tunnels de vente).</p>
+        <p>🛠 <b>Outils avancés</b> : simulateurs financiers, modèles de pub, checklists.</p>
+        <p>🔒 <b>Communauté privée</b> : accès Discord/Slack exclusif + mention “Ikigai Elite”.</p>
+        <p>✨ <b>Évolutif à vie</b> : toutes les futures fonctionnalités et nouveautés incluses dans ton abonnement.</p>
       </div>
-    </section>
-  </main>
+      <div class="price-box">79–149€/mois – Bientôt disponible</div><br>
+      <button id="closeIkigai" class="btn primary">Fermer</button>
+    </div>
+  </div>
 
-<script>
-/* ---------------------------------------------
-   SOLEIL + TEXTE
----------------------------------------------- */
+  <script>
+    // Background animation
+    const canvas=document.getElementById('bgCanvas');const ctx=canvas.getContext('2d');let width,height,t=0,scrollScale=1;
+    function resize(){width=canvas.width=window.innerWidth;height=canvas.height=window.innerHeight}
+    window.addEventListener('resize',resize);resize();
+    function draw(){ctx.clearRect(0,0,width,height);const cx=width/2,cy=height/2;
+      for(let i=0;i<6;i++){const angle=(Math.PI*2/6)*i+t*0.01;
+        const orbitRadius=(250*scrollScale)+Math.sin(t*0.01+i)*20;
+        const x=cx+Math.cos(angle)*orbitRadius;const y=cy+Math.sin(angle)*orbitRadius;
+        const r=120*scrollScale;
+        const g=ctx.createRadialGradient(x,y,r*0.2,x,y,r);
+        g.addColorStop(0,'rgba(255,255,255,0.15)');g.addColorStop(1,'rgba(255,255,255,0)');
+        ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();}
+      t++;requestAnimationFrame(draw)}
+    draw();
+    window.addEventListener('scroll',()=>{scrollScale=1+window.scrollY*0.0012});
 
-const canvas = document.getElementById("bgCanvas");
-const ctx = canvas.getContext("2d");
+    // Preloader with forced delay
+    window.addEventListener("load", () => {
+      const preloader = document.getElementById("preloader");
+      setTimeout(() => {
+        preloader.style.opacity = "0";
+        setTimeout(() => preloader.style.display = "none", 800);
+      }, 2000); // Force minimum 2s
+    });
 
-let w, h;
-let sunY;
-let sunTargetY;
-let sunR = 140;
-let maxSunR = 480;
-let animationDone = false;
-const bigTitle = document.getElementById("bigTitle");
-
-function resizeSun() {
-  w = canvas.width = window.innerWidth;
-  h = canvas.height = window.innerHeight;
-
-  sunY = h + sunR * 4;
-  sunTargetY = h * 0.50;
-}
-window.addEventListener("resize", () => {
-  resizeSun();
-  resizeOcean();
-});
-resizeSun();
-
-function drawSun() {
-  ctx.clearRect(0, 0, w, h);
-
-  const grad = ctx.createRadialGradient(
-    w / 2, sunY, sunR * 0.15,
-    w / 2, sunY, sunR
-  );
-
-  grad.addColorStop(0, "rgba(255,215,150,0.95)");
-  grad.addColorStop(0.25, "rgba(255,190,120,0.55)");
-  grad.addColorStop(0.45, "rgba(255,165,80,0.25)");
-  grad.addColorStop(1, "rgba(255,150,60,0)");
-
-  ctx.fillStyle = grad;
-  ctx.beginPath();
-  ctx.arc(w / 2, sunY, sunR, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-function animateSun() {
-  if (sunY > sunTargetY) {
-    sunY -= (sunY - sunTargetY) * 0.015;
-  }
-
-  if (sunR < maxSunR) {
-    sunR += (maxSunR - sunR) * 0.012;
-  }
-
-  if (!animationDone && sunR > maxSunR * 0.9) {
-    animationDone = true;
-    bigTitle.classList.add("show");
-  }
-
-  drawSun();
-  requestAnimationFrame(animateSun);
-}
-animateSun();
-
-/* ---------------------------------------------
-   OCÉAN AVEC VAGUES PARTOUT + REFLET
----------------------------------------------- */
-
-const oceanCanvas = document.getElementById("oceanCanvas");
-const octx = oceanCanvas.getContext("2d");
-
-function resizeOcean() {
-  oceanCanvas.width = window.innerWidth;
-  oceanCanvas.height = window.innerHeight / 2;
-}
-resizeOcean();
-
-let waveTime = 0;
-
-function drawOcean() {
-  const W = oceanCanvas.width;
-  const H = oceanCanvas.height;
-
-  octx.clearRect(0, 0, W, H);
-
-  // Fond de l'eau
-  const baseGrad = octx.createLinearGradient(0, 0, 0, H);
-  baseGrad.addColorStop(0, "#06101f");
-  baseGrad.addColorStop(1, "#000000");
-  octx.fillStyle = baseGrad;
-  octx.fillRect(0, 0, W, H);
-
-  // Reflet vertical du soleil sur l'eau (lié à la taille du soleil)
-  const reflectStrength = Math.min(
-    1,
-    Math.max(0, (sunR - maxSunR * 0.5) / (maxSunR * 0.4))
-  );
-
-  if (reflectStrength > 0) {
-    octx.save();
-    octx.globalCompositeOperation = "screen";
-    const refGrad = octx.createRadialGradient(
-      W / 2, 0, 0,
-      W / 2, 0, H * 1.1
-    );
-    refGrad.addColorStop(0, `rgba(255,220,180,${0.35 * reflectStrength})`);
-    refGrad.addColorStop(0.3, `rgba(255,200,150,${0.22 * reflectStrength})`);
-    refGrad.addColorStop(0.7, `rgba(80,60,40,${0.12 * reflectStrength})`);
-    refGrad.addColorStop(1, "rgba(0,0,0,0)");
-
-    octx.fillStyle = refGrad;
-    octx.fillRect(0, 0, W, H);
-    octx.restore();
-  }
-
-  // Vagues sur toute la surface
-  const waveBaseHeight = 20;
-
-  octx.lineWidth = 1;
-
-  for (let band = 0; band < H; band += 26) {
-    const depthFactor = 1 - band / H; // plus profond = vagues plus petites
-    const amp = waveBaseHeight * depthFactor;
-
-    octx.beginPath();
-    let started = false;
-
-    for (let x = 0; x <= W; x += 4) {
-      const y =
-        band +
-        Math.sin((x + waveTime) * 0.012) * amp +
-        Math.sin((x * 0.7 + waveTime * 1.6) * 0.009) * (amp * 0.5) +
-        Math.sin((x * 0.25 + waveTime * 0.4) * 0.004) * (amp * 0.3);
-
-      if (!started) {
-        octx.moveTo(x, y);
-        started = true;
-      } else {
-        octx.lineTo(x, y);
-      }
-    }
-
-    const alpha = 0.06 + depthFactor * 0.12;
-    octx.strokeStyle = `rgba(255,255,255,${alpha})`;
-    octx.stroke();
-  }
-
-  // légère ombre en bas pour le relief
-  const bottomGrad = octx.createLinearGradient(0, H * 0.6, 0, H);
-  bottomGrad.addColorStop(0, "rgba(0,0,0,0)");
-  bottomGrad.addColorStop(1, "rgba(0,0,0,0.6)");
-  octx.fillStyle = bottomGrad;
-  octx.fillRect(0, H * 0.6, W, H * 0.4);
-
-  waveTime += 0.8;
-  requestAnimationFrame(drawOcean);
-}
-drawOcean();
-
-/* ---------------------------------------------
-   EFFET DEZOOM AU SCROLL
----------------------------------------------- */
-
-function updateHeroOnScroll() {
-  const scroll = window.scrollY;
-  const vh = window.innerHeight || 1;
-  const progress = Math.min(scroll / vh, 1.2);
-
-  const scale = 1 - progress * 0.35;
-  const canvasTranslate = progress * 20;
-  const oceanTranslate = progress * 40;
-
-  canvas.style.transform = `translateY(${canvasTranslate}px) scale(${scale})`;
-  oceanCanvas.style.transform = `translateY(${oceanTranslate}px)`;
-
-  const titleScale = 1 - progress * 0.25;
-  const titleY = -50 - progress * 30;
-  bigTitle.style.transform = `translate(-50%, ${titleY}%) scale(${titleScale})`;
-}
-
-window.addEventListener('scroll', updateHeroOnScroll);
-updateHeroOnScroll();
-</script>
-
+    // Modal logic
+    const modal = document.getElementById("ikigaiModal");
+    document.getElementById("openIkigai").addEventListener("click", e=>{
+      e.preventDefault();
+      modal.classList.add("show");
+    });
+    document.getElementById("closeIkigai").addEventListener("click", ()=>{
+      modal.classList.remove("show");
+    });
+  </script>
 </body>
 </html>
